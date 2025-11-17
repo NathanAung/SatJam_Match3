@@ -50,7 +50,7 @@ public:
     UPROPERTY(VisibleAnywhere, Category = "Game")
     bool bInputLocked = false;
 
-    float ClearDelay = 0.3f;    // Time before clearing
+    float ClearDelay = 0.5f;    // Time before clearing
 
 
     // public accessors
