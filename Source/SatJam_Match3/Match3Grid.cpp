@@ -227,7 +227,71 @@ void AMatch3Grid::AttemptSwap(AMatchTile* A, AMatchTile* B)
 
     // have matches => resolve them
     bInputLocked = true;
-    ClearMatches(Matches);
+    StartClear(Matches);
+}
+
+
+void AMatch3Grid::StartClear(const TArray<AMatchTile*>& Matches)
+{
+    if (Matches.Num() == 0)
+    {
+        bInputLocked = false;
+        return;
+    }
+
+    bInputLocked = true;
+    PendingClearMatches = Matches;
+
+    // Delay before the clear happens
+    GetWorld()->GetTimerManager().SetTimer(
+        ClearTimerHandle,
+        this,
+        &AMatch3Grid::PerformClear,
+        ClearDelay,
+        false
+    );
+}
+
+
+void AMatch3Grid::PerformClear()
+{
+    if (PendingClearMatches.Num() == 0)
+    {
+        bInputLocked = false;
+        return;
+    }
+
+    // Destroy tiles
+    for (AMatchTile* Tile : PendingClearMatches)
+    {
+        if (!Tile) continue;
+        int r = Tile->Row;
+        int c = Tile->Col;
+        GridArray[Index(r, c)] = nullptr;
+        Tile->Destroy();
+    }
+
+    PendingClearMatches.Empty();
+
+    // Apply gravity and refill
+    ApplyGravityAndRefill();
+
+    // Check for cascades after gravity
+    TArray<AMatchTile*> NewMatches = FindAllMatches();
+
+    if (NewMatches.Num() > 0)
+    {
+        StartClear(NewMatches); // chain reaction with delay
+        return;
+    }
+
+    bInputLocked = false;
+
+    // No moves? Regenerate grid
+    if (!HasPossibleMove())
+    {
+        RegenerateGrid();
+    }
 }
 
 

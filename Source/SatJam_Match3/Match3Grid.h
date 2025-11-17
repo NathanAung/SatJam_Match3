@@ -50,6 +50,9 @@ public:
     UPROPERTY(VisibleAnywhere, Category = "Game")
     bool bInputLocked = false;
 
+    float ClearDelay = 0.3f;    // Time before clearing
+
+
     // public accessors
     AMatchTile* GetTileAt(int32 Row, int32 Col) const;
     bool IsInside(int32 Row, int32 Col) const;
@@ -64,6 +67,10 @@ protected:
     // internal grid storage (flattened)
     TArray<AMatchTile*> GridArray;
 
+    TArray<AMatchTile*> PendingClearMatches;
+    FTimerHandle ClearTimerHandle;
+
+
     // helpers
     inline int32 Index(int32 Row, int32 Col) const { return Row * Cols + Col; }
 
@@ -73,6 +80,9 @@ protected:
     void ClearMatches(const TArray<AMatchTile*>& Matches);
     void ApplyGravityAndRefill();
     bool HasPossibleMove() const;
+
+    void StartClear(const TArray<AMatchTile*>& Matches);
+    void PerformClear();
 
     // utility
     void DestroyAllTiles();
